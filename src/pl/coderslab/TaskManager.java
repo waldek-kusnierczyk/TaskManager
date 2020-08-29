@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,8 +39,6 @@ public class TaskManager {
                     break;
                 case "exit":
                     exitOption();
-                    //return;
-                    System.exit(0);
                 default:
                     System.out.println(ConsoleColors.RED + "Please select an appropriate option!!" + ConsoleColors.RESET);
             }
@@ -82,6 +81,26 @@ public class TaskManager {
         return true;
     }
 
+    private static void saveDBToFile() {
+        Path path = Paths.get(DB_FILE_NAME);
+
+        List<String> tasksList = new ArrayList<>();
+        for (int i = 0; i < tasks.length; i++) {
+            StringBuilder task = new StringBuilder();
+//            for (int j = 0; j < tasks[i].length; j++) {
+//                task.append(tasks[i][j]).append(",");
+//            }
+
+            tasksList.add(String.join("-", tasks[i]));
+        }
+
+        try {
+            Files.write(path, tasksList);
+        } catch (IOException ex) {
+            System.out.println("Nie można zapisać pliku.");
+        }
+    }
+
     private static void addOption() {
         System.out.println(ConsoleColors.CYAN + "ADD" + ConsoleColors.RESET);
     }
@@ -109,6 +128,8 @@ public class TaskManager {
 
     private static void exitOption() {
         System.out.println(ConsoleColors.CYAN + "EXIT" + ConsoleColors.RESET);
+        saveDBToFile();
+        System.exit(0);
     }
 
 }
