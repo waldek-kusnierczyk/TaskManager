@@ -90,9 +90,6 @@ public class TaskManager {
         for (String[] task : tasks) {
             tasksList.add(String.join(",", task));
         }
-//        for (int i = 0; i < tasks.length; i++) {
-//            tasksList.add(String.join(",", tasks[i]));
-//        }
 
         try {
             Files.write(path, tasksList);
@@ -109,32 +106,36 @@ public class TaskManager {
         System.out.println(ConsoleColors.CYAN + "ADD" + ConsoleColors.RESET);
         System.out.println("Please add task description: ");
         Scanner scan = new Scanner(System.in);
-        description = scan.nextLine();
+        while (true) {
+            description = scan.nextLine().trim();                   // usuwamy biale znaki z poczatku i konca tekstu
+            if(description.length() > 0) {
+                break;
+            }
+            System.out.println(ConsoleColors.RED_BOLD + "Please write appropriate task description!!" + ConsoleColors.RESET);
+        }
+
 
         boolean isDateParsable = false;
         while (!isDateParsable) {
             System.out.println("Please add task due date: ");
             isDateParsable = true;
-            date = scan.next();
+            date = scan.nextLine();                             // nextLine() zamiast next(), żeby zabiezpieczyć przed wpisaniem bialych znakow
+            date = date.replaceAll("\\s", "");                  // usuwamy biale znaki
             String[] dateParts = date.split("-");
+
             if (dateParts.length != 3) {
                 isDateParsable = false;
             } else {
                 if (dateParts[0].length() != 4 || dateParts[1].length() != 2 || dateParts[2].length() != 2) {
                     isDateParsable = false;
-                }
-                for (String datePart : dateParts) {                 // sprawdzamy poszczegolne czesci daty czy sa liczbami (proste sprawdzanie)
-                    if (!NumberUtils.isParsable(datePart)) {
-                        isDateParsable = false;
-                        break;
+                } else {
+                    for (String datePart : dateParts) {                 // sprawdzamy poszczegolne czesci daty czy sa liczbami (proste sprawdzanie)
+                        if (!NumberUtils.isParsable(datePart)) {
+                            isDateParsable = false;
+                            break;
+                        }
                     }
                 }
-//                for (int i = 0; i < dateParts.length; i++) {
-//                    if (!NumberUtils.isParsable(dateParts[i])) {
-//                        isDate = false;
-//                        break;
-//                    }
-//                }
             }
             if (!isDateParsable) {
                 System.out.println(ConsoleColors.RED_BOLD + "Wrong date format!!!" + ConsoleColors.RESET);
