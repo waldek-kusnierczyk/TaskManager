@@ -1,12 +1,13 @@
 package pl.coderslab;
 
-import com.sun.jdi.connect.Connector;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,10 +18,10 @@ public class TaskManager {
     static String[][] tasks;
 
     public static void main(String[] args) {
-        String selectedOption = "";
+        String selectedOption;
 
         if (!loadDBFromFile()) {
-            System.out.println("Problem z Odczytem pliku bazy.");
+            System.out.println("Loading file problem.");
             System.exit(0);
         }
 
@@ -39,6 +40,7 @@ public class TaskManager {
                     break;
                 case "exit":
                     exitOption();
+                    System.exit(0);
                 default:
                     System.out.println(ConsoleColors.RED + "Please select an appropriate option!!" + ConsoleColors.RESET);
             }
@@ -85,14 +87,12 @@ public class TaskManager {
         Path path = Paths.get(DB_FILE_NAME);
 
         List<String> tasksList = new ArrayList<>();
-        for (int i = 0; i < tasks.length; i++) {
-            StringBuilder task = new StringBuilder();
-//            for (int j = 0; j < tasks[i].length; j++) {
-//                task.append(tasks[i][j]).append(",");
-//            }
-
-            tasksList.add(String.join("-", tasks[i]));
+        for (String[] task : tasks) {
+            tasksList.add(String.join(",", task));
         }
+//        for (int i = 0; i < tasks.length; i++) {
+//            tasksList.add(String.join(",", tasks[i]));
+//        }
 
         try {
             Files.write(path, tasksList);
@@ -102,7 +102,62 @@ public class TaskManager {
     }
 
     private static void addOption() {
+        String description;
+        String date = null;
+        String isImportant;
+
         System.out.println(ConsoleColors.CYAN + "ADD" + ConsoleColors.RESET);
+        System.out.println("Please add task description: ");
+        Scanner scan = new Scanner(System.in);
+        description = scan.nextLine();
+
+        boolean isDateParsable = false;
+        while (!isDateParsable) {
+            System.out.println("Please add task due date: ");
+            isDateParsable = true;
+            date = scan.next();
+            String[] dateParts = date.split("-");
+            if (dateParts.length != 3) {
+                isDateParsable = false;
+            } else {
+                if (dateParts[0].length() != 4 || dateParts[1].length() != 2 || dateParts[2].length() != 2) {
+                    isDateParsable = false;
+                }
+                for (String datePart : dateParts) {                 // sprawdzamy poszczegolne czesci daty czy sa liczbami (proste sprawdzanie)
+                    if (!NumberUtils.isParsable(datePart)) {
+                        isDateParsable = false;
+                        break;
+                    }
+                }
+//                for (int i = 0; i < dateParts.length; i++) {
+//                    if (!NumberUtils.isParsable(dateParts[i])) {
+//                        isDate = false;
+//                        break;
+//                    }
+//                }
+            }
+            if (!isDateParsable) {
+                System.out.println(ConsoleColors.RED_BOLD + "Wrong date format!!!" + ConsoleColors.RESET);
+            }
+        }
+        System.out.println("Is your task is important: " + ConsoleColors.RED + "true/false");
+        while (!scan.hasNextBoolean()) {
+            scan.next();
+            System.out.println(ConsoleColors.RED_BOLD + "Please write appropriate task important format!!" + ConsoleColors.RESET);
+        }
+        isImportant = scan.next();
+        addToTasks(description, date, isImportant);
+
+        System.out.print(ConsoleColors.RESET + "Value was successfully added: ");
+        System.out.println(description + ", " + date + ", " + ConsoleColors.RED+isImportant+ConsoleColors.RESET);
+    }
+
+    private static void addToTasks(String description, String date, String isImportant) {
+        tasks = Arrays.copyOf(tasks, tasks.length+1);
+        tasks[tasks.length-1] = new String[3];
+        tasks[tasks.length-1][0] = description;
+        tasks[tasks.length-1][1] = date;
+        tasks[tasks.length-1][2] = isImportant;
     }
 
     private static void removeOption() {
@@ -116,10 +171,14 @@ public class TaskManager {
             for (int j = 0; j < tasks[i].length; j++) {
                 if (j == tasks[i].length - 1) {
                     System.out.println(ConsoleColors.RED + tasks[i][j] + ConsoleColors.RESET);
-                } else {
-                    System.out.print(tasks[i][j]);
-                    if (j < tasks[i].length-1) {
-                        System.out.print("\t");
+                    //System.out.println(tasks[i][j]);
+                }
+                //if (j < tasks[i].length - 1)
+                else
+                {
+                    System.out.print(ConsoleColors.RESET+ tasks[i][j] + ConsoleColors.RESET);
+                    if (j < tasks[i].length - 1) {
+                        System.out.print(ConsoleColors.RESET + "\t" + ConsoleColors.RESET);
                     }
                 }
             }
@@ -129,7 +188,6 @@ public class TaskManager {
     private static void exitOption() {
         System.out.println(ConsoleColors.CYAN + "EXIT" + ConsoleColors.RESET);
         saveDBToFile();
-        System.exit(0);
     }
 
 }
