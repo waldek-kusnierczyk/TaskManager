@@ -1,5 +1,6 @@
 package pl.coderslab;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class TaskManager {
                     exitOption();
                     System.exit(0);
                 default:
-                    System.out.println(ConsoleColors.RED + "Please select an appropriate option!!" + ConsoleColors.RESET);
+                    System.out.println(ConsoleColors.RED + "Please select correct option!!" + ConsoleColors.RESET);
             }
         }
     }
@@ -67,13 +68,10 @@ public class TaskManager {
         try {
             List<String> tasksLines = Files.readAllLines(path);
             int numberOftasks = tasksLines.size();
-            System.out.println("taskSize = " + numberOftasks);
+
 
             tasks = new String[numberOftasks][];
 
-            /*for (String line : tasksLines) {
-                System.out.println(line);
-            }*/
             for (int i = 0; i < tasks.length; i++) {
                 tasks[i] = tasksLines.get(i).split(",");
             }
@@ -103,17 +101,16 @@ public class TaskManager {
         String date = null;
         String isImportant;
 
-        System.out.println(ConsoleColors.CYAN + "ADD" + ConsoleColors.RESET);
+        System.out.println(ConsoleColors.CYAN_BOLD + "ADD" + ConsoleColors.RESET);
         System.out.println("Please add task description: ");
         Scanner scan = new Scanner(System.in);
         while (true) {
             description = scan.nextLine().trim();                   // usuwamy biale znaki z poczatku i konca tekstu
-            if(description.length() > 0) {
+            if (description.length() > 0) {
                 break;
             }
-            System.out.println(ConsoleColors.RED_BOLD + "Please write appropriate task description!!" + ConsoleColors.RESET);
+            System.out.println(ConsoleColors.RED_BOLD + "Please write correct task description!!" + ConsoleColors.RESET);
         }
-
 
         boolean isDateParsable = false;
         while (!isDateParsable) {
@@ -144,42 +141,67 @@ public class TaskManager {
         System.out.println("Is your task is important: " + ConsoleColors.RED + "true/false");
         while (!scan.hasNextBoolean()) {
             scan.next();
-            System.out.println(ConsoleColors.RED_BOLD + "Please write appropriate task important format!!" + ConsoleColors.RESET);
+            System.out.println(ConsoleColors.RED_BOLD + "Please write correct task important format!!" + ConsoleColors.RESET);
         }
         isImportant = scan.next();
         addToTasks(description, date, isImportant);
 
         System.out.print(ConsoleColors.RESET + "Value was successfully added: ");
-        System.out.println(description + ", " + date + ", " + ConsoleColors.RED+isImportant+ConsoleColors.RESET);
+        System.out.println(description + ", " + date + ", " + ConsoleColors.RED + isImportant + ConsoleColors.RESET);
     }
 
     private static void addToTasks(String description, String date, String isImportant) {
-        tasks = Arrays.copyOf(tasks, tasks.length+1);
-        tasks[tasks.length-1] = new String[3];
-        tasks[tasks.length-1][0] = description;
-        tasks[tasks.length-1][1] = date;
-        tasks[tasks.length-1][2] = isImportant;
+        tasks = Arrays.copyOf(tasks, tasks.length + 1);
+        tasks[tasks.length - 1] = new String[3];
+        tasks[tasks.length - 1][0] = description;
+        tasks[tasks.length - 1][1] = date;
+        tasks[tasks.length - 1][2] = isImportant;
     }
 
     private static void removeOption() {
-        System.out.println(ConsoleColors.CYAN + "REMOVE" + ConsoleColors.RESET);
+        System.out.println(ConsoleColors.CYAN_BOLD + "REMOVE" + ConsoleColors.RESET);
+
+        if (tasks.length == 0) {
+            System.out.println(ConsoleColors.BLUE_BRIGHT + "Tasks table is empty!" + ConsoleColors.RESET);
+        } else {
+            System.out.println("Please select number to remove: ");
+            Scanner scan = new Scanner(System.in);
+
+            while (true) {
+                String number = scan.next();
+                if (NumberUtils.isParsable(number)) {
+                    int taskNumber = Integer.parseInt(number);
+                    if (taskNumber >= 0) {
+                        try {
+                            tasks = ArrayUtils.remove(tasks, taskNumber);
+                            System.out.println(ConsoleColors.RESET + "Value " + taskNumber + " was successfully deleted. " + ConsoleColors.RESET);
+                            break;
+                        } catch (IndexOutOfBoundsException e) {
+                            System.out.println("Error while deleting task. Number doesn't exist.");
+                        }
+                    }
+                }
+                System.out.println(ConsoleColors.RED_BOLD + "Please write correct number!!!" + ConsoleColors.RESET);
+            }
+        }
     }
 
     private static void listOption() {
-        System.out.println(ConsoleColors.CYAN + "LIST" + ConsoleColors.RESET);
-        for (int i = 0; i < tasks.length; i++) {
-            System.out.printf("%2d: ", i);
-            for (int j = 0; j < tasks[i].length; j++) {
-                if (j == tasks[i].length - 1) {
-                    System.out.println(ConsoleColors.RED + tasks[i][j] + ConsoleColors.RESET);
-                    //System.out.println(tasks[i][j]);
-                }
-                //if (j < tasks[i].length - 1)
-                else
-                {
-                    System.out.print(ConsoleColors.RESET+ tasks[i][j] + ConsoleColors.RESET);
-                    if (j < tasks[i].length - 1) {
-                        System.out.print(ConsoleColors.RESET + "\t" + ConsoleColors.RESET);
+        System.out.println(ConsoleColors.CYAN_BOLD + "LIST" + ConsoleColors.RESET);
+
+        if (tasks.length == 0) {
+            System.out.println(ConsoleColors.BLUE_BRIGHT + "Tasks table is empty!" + ConsoleColors.RESET);
+        } else {
+            for (int i = 0; i < tasks.length; i++) {
+                System.out.printf("%2d: ", i);
+                for (int j = 0; j < tasks[i].length; j++) {
+                    if (j == tasks[i].length - 1) {
+                        System.out.println(ConsoleColors.RED + tasks[i][j] + ConsoleColors.RESET);
+                    } else {
+                        System.out.print(ConsoleColors.RESET + tasks[i][j] + ConsoleColors.RESET);
+                        if (j < tasks[i].length - 1) {
+                            System.out.print(ConsoleColors.RESET + "\t" + ConsoleColors.RESET);
+                        }
                     }
                 }
             }
@@ -187,8 +209,9 @@ public class TaskManager {
     }
 
     private static void exitOption() {
-        System.out.println(ConsoleColors.CYAN + "EXIT" + ConsoleColors.RESET);
+        System.out.println(ConsoleColors.CYAN_BOLD + "EXIT" + ConsoleColors.RESET);
         saveDBToFile();
+        System.out.println(ConsoleColors.RED + "Bye, bye!" + ConsoleColors.RESET);
     }
 
 }
